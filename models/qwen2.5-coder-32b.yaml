@@ -1,0 +1,15 @@
+model_key: qwen2.5-coder-32b
+display_name: "Qwen2.5-Coder 32B (Q4_K_M) — reference config"
+hf_repo: bartowski/Qwen2.5-Coder-32B-Instruct-GGUF
+hf_filename: Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf
+quantization: Q4_K_M
+size_gb: 19.8
+vram_required_gb: 24
+context_length: 32768
+n_gpu_layers: 99
+tool_call_parser: qwen2_5
+temperature: 0.7
+repeat_penalty: 1.1
+stop_tokens:
+  - "<|endoftext|>"
+  - "<|im_end|>"
