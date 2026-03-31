@@ -21,6 +21,7 @@ litellm_settings:
   drop_params: true
   modify_params: true
   disable_key_check: true
+  add_function_to_prompt: true
 
 general_settings:
   disable_spend_logs: true
