@@ -165,10 +165,9 @@ def check_prerequisites() -> bool:
 
     # Apple Silicon: llama-server
     if IS_APPLE:
-        if shutil.which("llama-server"):
-            r = subprocess.run(["llama-server", "--version"],
-                               capture_output=True, text=True, timeout=5)
-            ok(f"llama-server found ({r.stdout.strip()[:40] or r.stderr.strip()[:40] or 'version unknown'})")
+        path = shutil.which("llama-server")
+        if path:
+            ok(f"llama-server found ({path})")
         else:
             fail("llama-server not found — install via Homebrew:")
             info("  brew install llama.cpp")
