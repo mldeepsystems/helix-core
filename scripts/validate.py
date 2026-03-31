@@ -254,7 +254,6 @@ def ensure_llama_server(args: argparse.Namespace) -> bool:
     print(f"    --host 0.0.0.0 --port {llama_port} \\")
     print(f"    --ctx-size {ctx} \\")
     print(f"    --n-gpu-layers 99 \\")
-    print(f"    --tool-call-parser {parser} \\")
     print(f"    --jinja")
     print()
 
