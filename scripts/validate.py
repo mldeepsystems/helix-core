@@ -355,9 +355,9 @@ def wait_for_services(args: argparse.Namespace) -> bool:
          {200},
          None),
         ("LiteLLM proxy",
-         f"http://localhost:{litellm_port}/health",
+         f"http://localhost:{litellm_port}/health/readiness",
          {200},
-         {"x-api-key": master_key}),
+         None),
         ("Langfuse",
          f"http://localhost:{langfuse_port}/api/public/health",
          {200, 401},   # 401 = up but needs auth
