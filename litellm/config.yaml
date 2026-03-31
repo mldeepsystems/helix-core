@@ -1,0 +1,26 @@
+# LiteLLM proxy configuration for helix-core
+#
+# Translates Anthropic SDK format (used by Claude Code CLI) to OpenAI format
+# (used by llama-server). Spike-validated 2026-03-31: direct connection is
+# incompatible — Anthropic SDK sends to /v1/messages with input_schema;
+# llama-server only accepts /v1/chat/completions with function.parameters.
+#
+# Required settings (spike-validated):
+#   drop_params: true      — Anthropic-specific params (e.g. betas) cause 422 without this
+#   modify_params: true    — Required for Anthropic→OpenAI param translation
+#   disable_key_check: true — Required for Claude Code's auth flow
+
+model_list:
+  - model_name: "claude-*"
+    litellm_params:
+      model: openai/local-model
+      api_base: http://llama-server:8080/v1
+      api_key: dummy  # llama-server doesn't validate keys
+
+litellm_settings:
+  drop_params: true
+  modify_params: true
+  disable_key_check: true
+
+general_settings:
+  master_key: ${LITELLM_MASTER_KEY}

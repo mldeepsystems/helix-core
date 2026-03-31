@@ -1,0 +1,15 @@
+model_key: llama-3.3-70b
+display_name: "Llama 3.3 70B (Q4_K_M) — general"
+hf_repo: bartowski/Llama-3.3-70B-Instruct-GGUF
+hf_filename: Llama-3.3-70B-Instruct-Q4_K_M.gguf
+quantization: Q4_K_M
+size_gb: 42.5
+vram_required_gb: 48
+context_length: 131072
+n_gpu_layers: 99
+tool_call_parser: llama3_json
+temperature: 0.7
+repeat_penalty: 1.1
+stop_tokens:
+  - "<|end_of_text|>"
+  - "<|eot_id|>"
