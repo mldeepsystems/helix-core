@@ -1,0 +1,165 @@
+# helix-core — full GPU stack (Linux / WSL2)
+#
+# Prerequisites:
+#   - NVIDIA Container Toolkit installed
+#   - .env populated (run: python scripts/setup.py)
+#
+# Start:
+#   docker compose up -d
+#
+# Start with AgentDx bridge:
+#   docker compose --profile agentdx up -d
+#
+# Validate:
+#   python scripts/check.py
+
+services:
+
+  # ── Model inference ─────────────────────────────────────────────────────────
+  llama-server:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: always
+    volumes:
+      - ${MODEL_PATH}:/models/model.gguf:ro
+    command: >
+      --model /models/model.gguf
+      --host 0.0.0.0
+      --port 8080
+      --ctx-size ${CONTEXT_LENGTH}
+      --n-gpu-layers ${N_GPU_LAYERS}
+      --tool-call-parser ${TOOL_CALL_PARSER}
+      --jinja
+    ports:
+      - "${LLAMA_SERVER_PORT:-8080}:8080"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  # ── Anthropic → OpenAI translation proxy ────────────────────────────────────
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    restart: always
+    depends_on:
+      llama-server:
+        condition: service_healthy
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  # ── Langfuse v2 trace capture ────────────────────────────────────────────────
+  postgres:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_DB: langfuse
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD:-langfuse-local}
+    volumes:
+      - langfuse_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  langfuse:
+    image: langfuse/langfuse:2
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${LANGFUSE_PORT:-3002}:3000"
+    environment:
+      DATABASE_URL: postgresql://langfuse:${LANGFUSE_DB_PASSWORD:-langfuse-local}@postgres:5432/langfuse
+      NEXTAUTH_URL: http://localhost:${LANGFUSE_PORT:-3002}
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
+      SALT: ${LANGFUSE_SALT}
+      ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY}
+      LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_INIT_USER_EMAIL}
+      LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_INIT_USER_PASSWORD}
+      LANGFUSE_INIT_PROJECT_NAME: ${LANGFUSE_INIT_PROJECT_NAME}
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_INIT_PROJECT_PUBLIC_KEY}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_INIT_PROJECT_SECRET_KEY}
+      TELEMETRY_ENABLED: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/api/public/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ── Observability ────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    depends_on:
+      - prometheus
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-helix-local}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+  # ── AgentDx bridge (optional — start with: docker compose --profile agentdx up) ──
+  agentdx-bridge:
+    profiles: [agentdx]
+    build:
+      context: ./agentdx_bridge
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      langfuse:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+    ports:
+      - "7700:7700"
+    environment:
+      LANGFUSE_HOST: http://langfuse:3000
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_INIT_PROJECT_PUBLIC_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_INIT_PROJECT_SECRET_KEY}
+      AGENTDX_POLL_INTERVAL: ${AGENTDX_POLL_INTERVAL:-30}
+      METRICS_PORT: 7700
+
+volumes:
+  langfuse_postgres:
+  prometheus_data:
+  grafana_data:

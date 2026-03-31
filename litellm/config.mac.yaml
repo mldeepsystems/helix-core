@@ -1,0 +1,17 @@
+# LiteLLM config for Apple Silicon (macOS) variant.
+# llama-server runs natively on Metal; Docker reaches it via host.docker.internal.
+
+model_list:
+  - model_name: "claude-*"
+    litellm_params:
+      model: openai/local-model
+      api_base: http://host.docker.internal:8080/v1
+      api_key: dummy
+
+litellm_settings:
+  drop_params: true
+  modify_params: true
+  disable_key_check: true
+
+general_settings:
+  master_key: ${LITELLM_MASTER_KEY}

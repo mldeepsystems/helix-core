@@ -1,0 +1,13 @@
+# Grafana dashboard provisioning — auto-loads dashboards from /var/lib/grafana/dashboards.
+# Dashboard JSON added in Stage 3.
+
+apiVersion: 1
+
+providers:
+  - name: helix-core
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
