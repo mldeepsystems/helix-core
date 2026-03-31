@@ -7,12 +7,15 @@ model_list:
       model: openai/local-model
       api_base: http://host.docker.internal:8080/v1
       api_key: dummy
+      add_function_to_prompt: true
+    model_info:
+      supports_function_calling: false
 
 litellm_settings:
   drop_params: true
   modify_params: true
   disable_key_check: true
-  add_function_to_prompt: true
+  callbacks: ["strip_schema_patterns.proxy_handler_instance"]
 
 general_settings:
   disable_spend_logs: true

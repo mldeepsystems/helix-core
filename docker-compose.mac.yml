@@ -24,6 +24,7 @@ services:
     restart: always
     volumes:
       - ./litellm/config.mac.yaml:/app/config.yaml:ro
+      - ./litellm/strip_schema_patterns.py:/app/strip_schema_patterns.py:ro
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     ports:
       - "${LITELLM_PORT:-4000}:4000"
