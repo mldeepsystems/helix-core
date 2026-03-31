@@ -167,8 +167,8 @@ def check_prerequisites() -> bool:
     if IS_APPLE:
         if shutil.which("llama-server"):
             r = subprocess.run(["llama-server", "--version"],
-                               capture_output=True, text=True)
-            ok(f"llama-server found ({r.stdout.strip()[:40] or 'version unknown'})")
+                               capture_output=True, text=True, timeout=5)
+            ok(f"llama-server found ({r.stdout.strip()[:40] or r.stderr.strip()[:40] or 'version unknown'})")
         else:
             fail("llama-server not found — install via Homebrew:")
             info("  brew install llama.cpp")
