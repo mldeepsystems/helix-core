@@ -1,11 +1,39 @@
 # Prometheus scrape configuration — helix-core
-# Full metric targets added in Stage 3.
+#
+# Scrapes:
+#   - llama-server  (port 8080) — inference metrics: tokens/sec, queue depth, TTFT
+#   - LiteLLM proxy (port 4000) — request counts, latency, error rates
+#   - Prometheus itself
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    stack: helix-core
 
 scrape_configs:
+
   - job_name: prometheus
     static_configs:
       - targets: ["localhost:9090"]
+
+  - job_name: llama-server
+    # llama-server exposes OpenAI-compatible /metrics (llama.cpp built-in)
+    static_configs:
+      - targets: ["llama-server:8080"]
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  - job_name: litellm
+    # LiteLLM exposes Prometheus metrics at /metrics when prometheus_port is set
+    static_configs:
+      - targets: ["litellm:4000"]
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  - job_name: agentdx-bridge
+    # agentdx-bridge Prometheus exporter (opt-in, port 7700)
+    static_configs:
+      - targets: ["agentdx-bridge:7700"]
+    metrics_path: /metrics
+    scrape_interval: 15s
