@@ -6,6 +6,7 @@ quantization: Q4_K_M
 size_gb: 4.7
 vram_required_gb: 0
 context_length: 16384
+gguf_arch: qwen2
 n_gpu_layers: 0
 tool_call_parser: qwen2_5
 temperature: 0.7

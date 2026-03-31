@@ -5,7 +5,8 @@ hf_filename: DeepSeek-R1-Distill-Llama-70B-Q4_K_M.gguf
 quantization: Q4_K_M
 size_gb: 42.5
 vram_required_gb: 48
-context_length: 65536
+context_length: 131072
+gguf_arch: llama
 n_gpu_layers: 99
 tool_call_parser: deepseek
 temperature: 0.6

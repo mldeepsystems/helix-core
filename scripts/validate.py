@@ -228,6 +228,21 @@ def run_setup(args: argparse.Namespace) -> bool:
 
 # ── Step 3: llama-server (Apple Silicon only) ─────────────────────────────────
 
+def _build_override_kv(model_key: str, ctx: str) -> str:
+    """Return --override-kv value to extend context beyond GGUF training limit."""
+    try:
+        import yaml  # type: ignore
+        model_yaml = REPO_ROOT / "models" / f"{model_key}.yaml"
+        if model_yaml.exists():
+            cfg = yaml.safe_load(model_yaml.read_text())
+            arch = cfg.get("gguf_arch", "")
+            if arch:
+                return f"{arch}.context_length=int:{ctx}"
+    except Exception:
+        pass
+    return ""
+
+
 def ensure_llama_server(args: argparse.Namespace) -> bool:
     if not IS_APPLE:
         return True  # Handled by Docker on Linux
@@ -243,9 +258,12 @@ def ensure_llama_server(args: argparse.Namespace) -> bool:
 
     # Not running — print the command and wait for user
     e = load_env()
-    model_path = e.get("MODEL_PATH", "/path/to/model.gguf")
-    ctx        = e.get("CONTEXT_LENGTH", "32768")
-    parser     = e.get("TOOL_CALL_PARSER", "qwen2_5")
+    model_path  = e.get("MODEL_PATH", "/path/to/model.gguf")
+    ctx         = e.get("CONTEXT_LENGTH", "131072")
+    model_key   = e.get("MODEL_KEY", "")
+
+    # Build --override-kv flag from model YAML gguf_arch field
+    override_kv = _build_override_kv(model_key, ctx)
 
     warn("llama-server is not running. Start it in a separate terminal:")
     print()
@@ -254,6 +272,9 @@ def ensure_llama_server(args: argparse.Namespace) -> bool:
     print(f"    --host 0.0.0.0 --port {llama_port} \\")
     print(f"    --ctx-size {ctx} \\")
     print(f"    --n-gpu-layers 99 \\")
+    print(f"    --parallel 1 \\")
+    if override_kv:
+        print(f"    --override-kv \"{override_kv}\" \\")
     print(f"    --jinja")
     print()
 
