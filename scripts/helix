@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# helix — CLI entrypoint for helix-core
+#
+# Usage:
+#   helix setup [--model KEY] [--mode local|cpu|cloud] [--skip-download]
+#   helix check
+#   helix cloud init
+#   helix help
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+_usage() {
+  cat <<EOF
+helix — helix-core CLI
+
+Usage:
+  helix setup [options]    Detect hardware, download model, write .env
+  helix check              Smoke test: verify the full stack is working
+  helix cloud init         Provision a cloud GPU (GCP or RunPod)
+  helix help               Show this help
+
+Setup options:
+  --model KEY              Skip interactive model selection (e.g. qwen2.5-coder-32b)
+  --mode  MODE             Skip interactive mode selection (local|cpu|cloud)
+  --skip-download          Configure only, do not download model
+
+Examples:
+  helix setup
+  helix setup --model qwen2.5-coder-7b --skip-download
+  helix check
+EOF
+}
+
+_require_python() {
+  if ! command -v python3 &>/dev/null; then
+    echo "error: python3 not found — install Python 3.10+" >&2
+    exit 1
+  fi
+}
+
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+  setup)
+    _require_python
+    exec python3 "${SCRIPT_DIR}/setup.py" "$@"
+    ;;
+  check)
+    _require_python
+    exec python3 "${SCRIPT_DIR}/check.py" "$@"
+    ;;
+  cloud)
+    SUBCMD="${1:-}"
+    if [[ "$SUBCMD" == "init" ]]; then
+      echo ""
+      echo "helix cloud init — deferred to v1.1"
+      echo ""
+      echo "Cloud GPU provisioning (GCP + RunPod) ships in a follow-on release."
+      echo "The local stack (Modes 1–3) must be validated first."
+      echo ""
+      echo "In the meantime, you can manually provision a GPU VM and point"
+      echo "ANTHROPIC_BASE_URL at its public IP:4000."
+      echo ""
+      exit 0
+    else
+      echo "error: unknown cloud subcommand: '${SUBCMD}'" >&2
+      echo "Available: helix cloud init" >&2
+      exit 1
+    fi
+    ;;
+  help|--help|-h)
+    _usage
+    ;;
+  *)
+    echo "error: unknown command: '$CMD'" >&2
+    echo ""
+    _usage >&2
+    exit 1
+    ;;
+esac
