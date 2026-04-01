@@ -1,67 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" fill="none">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="900" y2="520" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#fafafa"/>
-      <stop offset="100%" stop-color="#f4f4f5"/>
-    </linearGradient>
-    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.08"/>
-    </filter>
-  </defs>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520">
   <!-- Background -->
-  <rect width="900" height="520" rx="12" fill="url(#bg)"/>
+  <rect width="900" height="520" rx="12" fill="#fafafa"/>
 
   <!-- Claude Code CLI box -->
-  <rect x="330" y="30" width="240" height="56" rx="10" fill="#1e1b4b" filter="url(#shadow)"/>
-  <text x="450" y="55" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#c4b5fd" font-weight="600">CLAUDE CODE CLI</text>
-  <text x="450" y="73" text-anchor="middle" font-family="'SF Mono', monospace" font-size="10" fill="#818cf8">ANTHROPIC_BASE_URL=localhost:4000</text>
+  <rect x="330" y="30" width="240" height="56" rx="10" fill="#1e1b4b"/>
+  <text x="450" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#c4b5fd" font-weight="bold">CLAUDE CODE CLI</text>
+  <text x="450" y="73" text-anchor="middle" font-family="Courier, monospace" font-size="10" fill="#818cf8">ANTHROPIC_BASE_URL=localhost:4000</text>
 
-  <!-- Arrow: Claude -> LiteLLM -->
-  <line x1="450" y1="86" x2="450" y2="130" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowPurple)"/>
-  <defs><marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6366f1"/></marker></defs>
+  <!-- Arrow: Claude to LiteLLM -->
+  <line x1="450" y1="86" x2="450" y2="124" stroke="#6366f1" stroke-width="2"/>
+  <polygon points="444,120 450,132 456,120" fill="#6366f1"/>
 
   <!-- LiteLLM Proxy box -->
-  <rect x="300" y="130" width="300" height="56" rx="10" fill="#ffffff" stroke="#6366f1" stroke-width="2" filter="url(#shadow)"/>
-  <text x="450" y="155" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#1e1b4b" font-weight="700">LiteLLM Proxy</text>
-  <text x="450" y="173" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#71717a">Anthropic format &rarr; OpenAI format  :4000</text>
+  <rect x="300" y="132" width="300" height="56" rx="10" fill="#ffffff" stroke="#6366f1" stroke-width="2"/>
+  <text x="450" y="157" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#1e1b4b" font-weight="bold">LiteLLM Proxy</text>
+  <text x="450" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#71717a">Anthropic &#x2192; OpenAI format  :4000</text>
 
-  <!-- Arrow: LiteLLM -> llama-server -->
-  <line x1="450" y1="186" x2="450" y2="230" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowPurple)"/>
+  <!-- Arrow: LiteLLM to llama-server -->
+  <line x1="450" y1="188" x2="450" y2="224" stroke="#6366f1" stroke-width="2"/>
+  <polygon points="444,220 450,232 456,220" fill="#6366f1"/>
 
   <!-- llama-server box -->
-  <rect x="300" y="230" width="300" height="56" rx="10" fill="#ffffff" stroke="#22c55e" stroke-width="2" filter="url(#shadow)"/>
-  <text x="450" y="255" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#14532d" font-weight="700">llama-server</text>
-  <text x="450" y="273" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#71717a">llama.cpp inference (any GGUF model)  :8080</text>
+  <rect x="300" y="232" width="300" height="56" rx="10" fill="#ffffff" stroke="#22c55e" stroke-width="2"/>
+  <text x="450" y="257" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#14532d" font-weight="bold">llama-server</text>
+  <text x="450" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#71717a">llama.cpp inference (any GGUF model)  :8080</text>
 
   <!-- Observability section label -->
-  <text x="450" y="330" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#a1a1aa" font-weight="600" letter-spacing="2">OBSERVABILITY</text>
-  <line x1="200" y1="338" x2="700" y2="338" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="450" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#a1a1aa" font-weight="bold" letter-spacing="2">OBSERVABILITY</text>
+  <line x1="200" y1="335" x2="700" y2="335" stroke="#e4e4e7" stroke-width="1"/>
 
-  <!-- Arrows down to observability -->
-  <line x1="300" y1="286" x2="180" y2="360" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowGray)"/>
-  <line x1="450" y1="286" x2="450" y2="360" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowGray)"/>
-  <line x1="600" y1="286" x2="720" y2="360" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowGray)"/>
-  <defs><marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#a1a1aa"/></marker></defs>
+  <!-- Dashed arrow: down-left to Langfuse -->
+  <line x1="350" y1="288" x2="220" y2="355" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <polygon points="215,350 220,360 226,351" fill="#a1a1aa"/>
+
+  <!-- Dashed arrow: down to Prometheus -->
+  <line x1="450" y1="288" x2="450" y2="355" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <polygon points="444,351 450,362 456,351" fill="#a1a1aa"/>
+
+  <!-- Dashed arrow: down-right to Grafana -->
+  <line x1="550" y1="288" x2="680" y2="355" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <polygon points="674,350 680,360 685,350" fill="#a1a1aa"/>
 
   <!-- Langfuse box -->
-  <rect x="80" y="360" width="200" height="56" rx="10" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="180" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#78350f" font-weight="600">Langfuse</text>
-  <text x="180" y="403" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#71717a">Session traces  :3002</text>
+  <rect x="80" y="362" width="200" height="56" rx="10" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="180" y="387" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#78350f" font-weight="bold">Langfuse</text>
+  <text x="180" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#71717a">Session traces  :3002</text>
 
   <!-- Prometheus box -->
-  <rect x="350" y="360" width="200" height="56" rx="10" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="450" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#7f1d1d" font-weight="600">Prometheus</text>
-  <text x="450" y="403" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#71717a">Metrics  :9090</text>
+  <rect x="350" y="362" width="200" height="56" rx="10" fill="#ffffff" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="450" y="387" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#7f1d1d" font-weight="bold">Prometheus</text>
+  <text x="450" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#71717a">Metrics  :9090</text>
 
   <!-- Grafana box -->
-  <rect x="620" y="360" width="200" height="56" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5" filter="url(#shadow)"/>
-  <text x="720" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" fill="#7c2d12" font-weight="600">Grafana</text>
-  <text x="720" y="403" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#71717a">Dashboards  :3000</text>
+  <rect x="620" y="362" width="200" height="56" rx="10" fill="#ffffff" stroke="#f97316" stroke-width="1.5"/>
+  <text x="720" y="387" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#7c2d12" font-weight="bold">Grafana</text>
+  <text x="720" y="405" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#71717a">Dashboards  :3000</text>
 
-  <!-- AgentDx -->
-  <line x1="180" y1="416" x2="180" y2="450" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowGray)"/>
-  <rect x="80" y="450" width="200" height="46" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="5 3" filter="url(#shadow)"/>
-  <text x="180" y="473" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#6b21a8" font-weight="600">AgentDx Bridge</text>
-  <text x="180" y="487" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#71717a">Pathology detection (optional)</text>
+  <!-- Dashed arrow: Langfuse to AgentDx -->
+  <line x1="180" y1="418" x2="180" y2="448" stroke="#a1a1aa" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <polygon points="174,444 180,455 186,444" fill="#a1a1aa"/>
+
+  <!-- AgentDx box (dashed border) -->
+  <rect x="80" y="455" width="200" height="46" rx="10" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <text x="180" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6b21a8" font-weight="bold">AgentDx Bridge</text>
+  <text x="180" y="493" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#71717a">Pathology detection (optional)</text>
 </svg>
