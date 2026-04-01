@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/social-preview.svg">
-    <img alt="helix-core" src="assets/social-preview.svg" width="720">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/social-preview.png">
+    <img alt="helix-core — Run Claude Code with local models" src="assets/social-preview.png" width="720">
   </picture>
 </p>
 
@@ -86,7 +86,7 @@ helix check         # Run the smoke test suite
 ## How it works
 
 <p align="center">
-  <img alt="helix-core architecture" src="assets/architecture.svg" width="720">
+  <img alt="helix-core architecture" src="assets/architecture.png" width="720">
 </p>
 
 Claude Code is hardwired to call `api.anthropic.com` using the Anthropic SDK format (`/v1/messages`). Local models speak the OpenAI format (`/v1/chat/completions`). These are incompatible — a direct connection returns 404.
