@@ -104,6 +104,27 @@ Claude Code responds to prompts routed through the local model. Zero tokens sent
 
 ---
 
+## Roadmap
+
+### Multi-tool / multi-backend support
+
+helix-core currently works with Claude Code + local llama-server. The architecture (LiteLLM proxy + observability stack) generalizes to:
+
+**Agentic tools:**
+- Claude Code (current)
+- OpenAI Codex CLI (speaks OpenAI format natively — can point at LiteLLM or directly at llama-server)
+- Any future agentic coding tool that speaks Anthropic or OpenAI format
+
+**Model backends:**
+- Local GGUF via llama-server (current)
+- OpenAI API (GPT-4o, o1, etc.)
+- Groq, Together, Fireworks, Cerebras (fast inference APIs)
+- Any provider LiteLLM supports (100+)
+
+The value: regardless of which tool or model you use, you get the same observability (Langfuse traces, Grafana dashboards) and pathology detection (AgentDx). `helix setup` should let users pick their tool + backend combination.
+
+---
+
 ## Files changed during validation (committed to main)
 
 | Commit | Change |
