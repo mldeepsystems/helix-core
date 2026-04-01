@@ -2,7 +2,21 @@
 
 Get Claude Code running against a local model in under 10 minutes.
 
-## Prerequisites
+## The fast way
+
+```bash
+git clone https://github.com/mldeepsystems/helix-core.git
+cd helix-core
+./scripts/helix
+```
+
+That's it. `helix` auto-detects your hardware, downloads the best model, starts all services, and launches Claude Code. Zero manual configuration.
+
+## The manual way
+
+If you prefer step-by-step control, or need to customize the setup:
+
+### Prerequisites
 
 | Requirement | Notes |
 |---|---|
@@ -12,15 +26,15 @@ Get Claude Code running against a local model in under 10 minutes.
 | GPU (optional) | NVIDIA with 8GB+ VRAM, or Apple Silicon, or CPU-only |
 | NVIDIA Container Toolkit | Linux GPU mode only — [install guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) |
 
-## Step 1 — Clone and set up
+### Step 1 — Clone and set up
 
 ```bash
 git clone https://github.com/mldeepsystems/helix-core.git
 cd helix-core
-python scripts/setup.py
+./scripts/helix setup
 ```
 
-`setup.py` will:
+`setup` will interactively:
 1. Detect your GPU / Apple Silicon / CPU
 2. Recommend a model based on available VRAM
 3. Download the GGUF model file from HuggingFace
@@ -28,15 +42,21 @@ python scripts/setup.py
 
 To skip the download (configure only):
 ```bash
-python scripts/setup.py --skip-download
+./scripts/helix setup --skip-download
 ```
 
 To select a specific model non-interactively:
 ```bash
-python scripts/setup.py --model qwen2.5-coder-7b --skip-download
+./scripts/helix setup --model qwen2.5-coder-7b --skip-download
 ```
 
-## Step 2 — Start the stack
+### Step 2 — Start the stack
+
+```bash
+helix up
+```
+
+Or manually with docker compose:
 
 **GPU (Linux / WSL2):**
 ```bash
@@ -66,11 +86,10 @@ Then start the proxy + observability stack:
 docker compose -f docker-compose.mac.yml up -d
 ```
 
-## Step 3 — Verify the stack
+### Step 3 — Verify the stack
 
 ```bash
-python scripts/check.py
-# or: ./scripts/helix check
+helix check
 ```
 
 All 5 checks should pass:
@@ -80,7 +99,7 @@ All 5 checks should pass:
 - `✓  Langfuse trace store`
 - `✓  ANTHROPIC_BASE_URL points to localhost`
 
-## Step 4 — Point Claude Code at the local stack
+### Step 4 — Point Claude Code at the local stack
 
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:4000
