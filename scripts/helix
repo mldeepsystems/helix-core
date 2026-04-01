@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 # helix — CLI entrypoint for helix-core
 #
+# Zero-friction: just type `helix` to auto-setup, start, and launch Claude Code.
+#
+# Install globally:
+#   sudo ln -sf "$(cd "$(dirname "$0")" && pwd)/helix" /usr/local/bin/helix
+#
 # Usage:
-#   helix setup [--model KEY] [--mode local|cpu|cloud] [--skip-download]
-#   helix check
-#   helix cloud init
-#   helix help
+#   helix                             Auto-setup + start + launch Claude Code
+#   helix up [--timeout N]            Start stack only (no Claude launch)
+#   helix down                        Stop all containers
+#   helix status                      Show service health
+#   helix setup [options]             Interactive setup (hardware, model, .env)
+#   helix check                       Smoke test the running stack
+#   helix cloud init                  Provision a cloud GPU (deferred to v1.1)
+#   helix help                        Show this help
 
 set -euo pipefail
 
@@ -17,10 +26,14 @@ _usage() {
 helix — helix-core CLI
 
 Usage:
-  helix setup [options]    Detect hardware, download model, write .env
-  helix check              Smoke test: verify the full stack is working
-  helix cloud init         Provision a cloud GPU (GCP or RunPod)
-  helix help               Show this help
+  helix                         Auto-setup + start + launch Claude Code
+  helix up [--timeout N]        Start stack (without launching Claude)
+  helix down                    Stop all containers
+  helix status                  Show service health
+  helix setup [options]         Interactive setup (hardware, model, .env)
+  helix check                   Smoke test the running stack
+  helix cloud init              Provision a cloud GPU (deferred)
+  helix help                    Show this help
 
 Setup options:
   --model KEY              Skip interactive model selection (e.g. qwen2.5-coder-32b)
@@ -28,9 +41,10 @@ Setup options:
   --skip-download          Configure only, do not download model
 
 Examples:
-  helix setup
-  helix setup --model qwen2.5-coder-7b --skip-download
-  helix check
+  helix                                    # just works
+  helix setup --model qwen2.5-coder-7b    # interactive setup with specific model
+  helix up --timeout 300                   # start stack with longer timeout
+  helix down                               # stop everything
 EOF
 }
 
@@ -41,10 +55,46 @@ _require_python() {
   fi
 }
 
-CMD="${1:-help}"
+# ── Compose helper (respects platform) ──────────────────────────────────────
+
+_compose_cmd() {
+  local mode
+  mode="$(grep -E '^DEPLOYMENT_MODE=' "${REPO_ROOT}/.env" 2>/dev/null | cut -d= -f2 || echo "local")"
+
+  if [[ "$(uname -s)" == "Darwin" && "$(uname -m)" == "arm64" ]]; then
+    echo "docker compose -f docker-compose.mac.yml"
+  elif [[ "$mode" == "cpu" ]]; then
+    echo "docker compose -f docker-compose.yml -f docker-compose.cpu.yml"
+  else
+    echo "docker compose -f docker-compose.yml"
+  fi
+}
+
+CMD="${1:-}"
 shift || true
 
 case "$CMD" in
+  "")
+    # Default: zero-friction auto-start + launch claude
+    _require_python
+    exec python3 "${SCRIPT_DIR}/start.py" "$@"
+    ;;
+  up)
+    # Start stack without launching claude
+    _require_python
+    exec python3 "${SCRIPT_DIR}/start.py" --no-launch "$@"
+    ;;
+  down)
+    cd "${REPO_ROOT}"
+    COMPOSE_CMD=$(_compose_cmd)
+    echo "Stopping helix-core stack..."
+    ${COMPOSE_CMD} down "$@"
+    echo "Stack stopped."
+    ;;
+  status)
+    _require_python
+    exec python3 "${SCRIPT_DIR}/check.py" "$@"
+    ;;
   setup)
     _require_python
     exec python3 "${SCRIPT_DIR}/setup.py" "$@"

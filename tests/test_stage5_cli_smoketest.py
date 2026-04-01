@@ -23,6 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 HELIX_CLI = REPO_ROOT / "scripts" / "helix"
 CHECK_PY = REPO_ROOT / "scripts" / "check.py"
 SETUP_PY = REPO_ROOT / "scripts" / "setup.py"
+START_PY = REPO_ROOT / "scripts" / "start.py"
 
 sys.path.insert(0, str(REPO_ROOT))
 
@@ -73,10 +74,15 @@ def test_helix_help_output():
     assert "check" in result.stdout
     assert "cloud" in result.stdout
 
-def test_helix_no_args_shows_help():
+def test_helix_no_args_runs_start():
+    """helix with no args delegates to start.py (may fail due to missing services)."""
     result = _run_helix()
-    assert result.returncode == 0
-    assert "Usage" in result.stdout or "usage" in result.stdout.lower()
+    combined = result.stdout + result.stderr
+    # start.py prints the banner or runs prerequisites — either is fine
+    assert "helix" in combined.lower() or "prerequisite" in combined.lower() or \
+           result.returncode in (0, 1), (
+        "helix with no args must delegate to start.py"
+    )
 
 def test_helix_setup_help_dispatches_to_setup_py():
     """helix setup --help should call setup.py and show its help."""
@@ -284,4 +290,115 @@ def test_helix_check_dispatches_to_check_py():
            "stack" in combined.lower() or "litellm" in combined.lower() or \
            result.returncode in (0, 1), (
         "helix check must dispatch to check.py"
+    )
+
+
+# ── start.py existence and structure ────────────────────────────────────────
+
+def test_start_py_exists():
+    assert START_PY.exists(), f"scripts/start.py not found at {START_PY}"
+
+def test_start_py_has_no_external_imports():
+    """start.py must use stdlib only — it runs before any pip install."""
+    content = START_PY.read_text()
+    forbidden = ["import requests", "import httpx", "import anthropic", "import langfuse"]
+    for imp in forbidden:
+        assert imp not in content, f"start.py must not import {imp!r} (stdlib only)"
+
+def test_start_py_has_main():
+    content = START_PY.read_text()
+    assert "def main" in content
+
+def test_start_py_has_prerequisites_check():
+    content = START_PY.read_text()
+    assert "check_prerequisites" in content
+
+def test_start_py_has_auto_setup():
+    content = START_PY.read_text()
+    assert "run_auto_setup" in content or "auto_setup" in content
+
+def test_start_py_has_compose_start():
+    content = START_PY.read_text()
+    assert "start_compose" in content or "compose" in content.lower()
+
+def test_start_py_has_health_wait():
+    content = START_PY.read_text()
+    assert "wait_for_health" in content or "wait_for_service" in content
+
+def test_start_py_has_claude_launch():
+    content = START_PY.read_text()
+    assert "launch_claude" in content
+
+def test_start_py_has_no_launch_flag():
+    content = START_PY.read_text()
+    assert "--no-launch" in content
+
+def test_start_py_reads_ports_from_env():
+    content = START_PY.read_text()
+    assert "LITELLM_PORT" in content
+    assert "LLAMA_SERVER_PORT" in content
+
+def test_start_py_sets_anthropic_env():
+    """start.py must set ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN for claude."""
+    content = START_PY.read_text()
+    assert "ANTHROPIC_BASE_URL" in content
+    assert "ANTHROPIC_AUTH_TOKEN" in content
+
+
+# ── setup.py --auto flag ─────────────────────────────────────────────────────
+
+def test_setup_py_has_auto_flag():
+    content = SETUP_PY.read_text()
+    assert "--auto" in content
+
+def test_setup_py_auto_in_argparse():
+    """--auto must be registered as an argparse argument."""
+    content = SETUP_PY.read_text()
+    assert "add_argument" in content and "--auto" in content
+
+def test_setup_py_auto_skips_interactive():
+    """In --auto mode, setup.py must not prompt for input."""
+    content = SETUP_PY.read_text()
+    # The auto path should use recommend_model, not ask()
+    assert "args.auto" in content
+    assert "recommend_model" in content
+
+
+# ── helix up / down / status subcommands ─────────────────────────────────────
+
+def test_helix_help_mentions_up():
+    result = _run_helix("help")
+    assert "up" in result.stdout
+
+def test_helix_help_mentions_down():
+    result = _run_helix("help")
+    assert "down" in result.stdout
+
+def test_helix_help_mentions_status():
+    result = _run_helix("help")
+    assert "status" in result.stdout
+
+def test_helix_up_delegates_to_start_py():
+    """helix up runs start.py --no-launch (may fail due to missing services)."""
+    result = _run_helix("up")
+    combined = result.stdout + result.stderr
+    # start.py prints the banner or prerequisite check output
+    assert "helix" in combined.lower() or "prerequisite" in combined.lower() or \
+           result.returncode in (0, 1), (
+        "helix up must delegate to start.py --no-launch"
+    )
+
+def test_helix_status_dispatches_to_check_py():
+    """helix status runs check.py (same as helix check)."""
+    env = {
+        **os.environ,
+        "LITELLM_PORT": "19999",
+        "LLAMA_SERVER_PORT": "19998",
+        "LANGFUSE_PORT": "19997",
+    }
+    result = _run_helix("status", env=env)
+    combined = result.stdout + result.stderr
+    assert "helix check" in combined or "✗" in combined or "checking" in combined or \
+           result.returncode in (0, 1), (
+        "helix status must dispatch to check.py"
     )

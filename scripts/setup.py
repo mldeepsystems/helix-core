@@ -487,6 +487,8 @@ def main() -> None:
     parser.add_argument("--model", help="Model key to use (skip interactive selection)")
     parser.add_argument("--mode", choices=["local", "cpu", "cloud"], help="Deployment mode")
     parser.add_argument("--skip-download", action="store_true", help="Skip model download")
+    parser.add_argument("--auto", action="store_true",
+                        help="Fully automatic: detect hardware, pick best model, no prompts")
     args = parser.parse_args()
 
     print(f"\n{BOLD}helix-core setup{RESET}")
@@ -513,6 +515,8 @@ def main() -> None:
 
     if args.mode:
         mode = args.mode
+    elif args.auto:
+        mode = "local" if hw.has_gpu else "cpu"
     else:
         print(f"\n  {BOLD}1{RESET}  Local GPU       — model runs on your machine")
         print(f"  {BOLD}2{RESET}  CPU offload     — no GPU required (slower)")
@@ -533,6 +537,9 @@ def main() -> None:
 
         if args.model and args.model in MODEL_BY_KEY:
             selected = MODEL_BY_KEY[args.model]
+        elif args.auto:
+            selected = recommend_model(hw)
+            info(f"Auto-selected: {BOLD}{selected.display_name}{RESET}")
         else:
             recommended = recommend_model(hw)
             info(f"Recommended for your hardware: {BOLD}{recommended.display_name}{RESET}")
