@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test dependencies
+        run: pip install pytest pyyaml
+
+      - name: Run test suite
+        run: python -m pytest tests/ -v --tb=short
+
+  docker-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose configs
+        run: |
+          docker compose -f docker-compose.yml config --quiet
+          docker compose -f docker-compose.cpu.yml config --quiet
+          docker compose -f docker-compose.mac.yml config --quiet
+
+  scripts-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check scripts have no external imports
+        run: |
+          for script in scripts/setup.py scripts/start.py scripts/check.py scripts/validate.py; do
+            echo "Checking $script..."
+            for pkg in requests httpx anthropic langfuse; do
+              if grep -q "import $pkg" "$script"; then
+                echo "ERROR: $script imports $pkg (must be stdlib only)"
+                exit 1
+              fi
+            done
+            echo "  OK"
+          done
+
+      - name: Check helix CLI is executable
+        run: test -x scripts/helix

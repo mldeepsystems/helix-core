@@ -1,8 +1,8 @@
 <p align="center">
-  <h1 align="center">helix-core</h1>
-  <p align="center">
-    Run Claude Code with local models. Zero API costs. Fully private.
-  </p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/social-preview.svg">
+    <img alt="helix-core" src="assets/social-preview.svg" width="720">
+  </picture>
 </p>
 
 <p align="center">
@@ -85,19 +85,9 @@ helix check         # Run the smoke test suite
 
 ## How it works
 
-```
-Claude Code CLI
-      |  ANTHROPIC_BASE_URL=http://localhost:4000
-      v
-LiteLLM proxy  :4000   <-- translates Anthropic --> OpenAI format
-      |
-      v
-llama-server   :8080   <-- inference (llama.cpp, any GGUF model)
-      |
-      |---> Langfuse    :3002   <-- session traces
-      |---> Prometheus  :9090   <-- metrics
-      +---> Grafana     :3000   <-- dashboards
-```
+<p align="center">
+  <img alt="helix-core architecture" src="assets/architecture.svg" width="720">
+</p>
 
 Claude Code is hardwired to call `api.anthropic.com` using the Anthropic SDK format (`/v1/messages`). Local models speak the OpenAI format (`/v1/chat/completions`). These are incompatible — a direct connection returns 404.
 
@@ -241,4 +231,4 @@ Community model configs are welcome. See `models/community/README.md` for the te
 
 ## License
 
-See LICENSE for details.
+See [LICENSE](LICENSE) for details.
